@@ -107,6 +107,12 @@ def get_ctfd_challenges(url, access_token):
     auth_headers = {"Authorization": f"Token {access_token}"}
     return requests.get(url + "/api/v1/challenges?view=admin", json=True, headers=auth_headers).json()["data"]
 
+def get_challenge_id_by_name(challenges, challenge_name):
+    for challenge in challenges:
+        if challenge["name"] == challenge_name:
+            return challenge["id"]
+    return None
+
 def create_challenge(challenge, directory, url, access_token, scoring = None):
     auth_headers = {"Authorization": f"Token {access_token}"}
 
@@ -179,11 +185,18 @@ def create_challenge(challenge, directory, url, access_token, scoring = None):
     #    r = session.patch(f"/api/v1/challenges/{challenge_id}", json=data)
     #    r.raise_for_status()
 
-    def delete_challenge_by_id(challenge_id, access_token, url):
-        auth_headers = {"Authorization": f"Token {access_token}"}
+def delete_challenge_by_id(challenge_id):
+    auth_headers = {"Authorization": f"Token {settings.token}"}
+    r = session.delete(settings.url + f"/api/v1/challenges/{challenge_id}", json={}, headers=auth_headers)
+    r.raise_for_status()
 
-        r = session.delete(url + f"/api/v1/challenges/{challenge_id}", json={}, headers=auth_headers)
-        r.raise_for_status()
+def delete_challenge_by_name(challenge_name):
+    challenge_id = get_challenge_id_by_name(challenge_name)
+    if challenge_id is not None:
+        delete_challenge_by_id(challenge_id)
+    else:
+        raise AttributeError(f"No challenge with name {challenge_name}")
+
 
 
 if __name__ == "__main__":
@@ -219,6 +232,7 @@ if __name__ == "__main__":
     for chal in challenges:
         if chal["title"] not in existing_challenge_names:
             print("-", chal["title"])
+
 
     choice = input("Do you want to import the new challenges? (y/N) ").lower().strip()
     if choice == "y":
