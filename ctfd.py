@@ -190,8 +190,9 @@ def delete_challenge_by_id(challenge_id):
     r = session.delete(settings.url + f"/api/v1/challenges/{challenge_id}", json={}, headers=auth_headers)
     r.raise_for_status()
 
-def delete_challenge_by_name(challenge_name):
-    challenge_id = get_challenge_id_by_name(challenge_name)
+def delete_challenge_by_name(challenges, challenge_name):
+    challenge_id = get_challenge_id_by_name(challenges, challenge_name)
+    print(challenge_id)
     if challenge_id is not None:
         delete_challenge_by_id(challenge_id)
     else:
@@ -242,7 +243,18 @@ if __name__ == "__main__":
                 if not settings.prompt_each:
                     create_challenge(chal, None, settings.url, settings.token, settings.scoring)
                     continue
-
                 if input("Import challenge '{}'? (y/N) ".format(chal['title'])).lower() == "y":
                     create_challenge(chal, None, settings.url, settings.token, settings.scoring)
                     print("-", chal["title"], "imported")
+            elif chal["title"] in existing_challenge_names:
+                if not settings.prompt_each:
+                    delete_challenge_by_name(existing_challenges, chal["title"])
+                    create_challenge(chal, None, settings.url, settings.token, settings.scoring)
+                    continue
+                if input("Refresh challenge '{}'? (y/N) ".format(chal['title'])).lower() == "y":
+                    delete_challenge_by_name(existing_challenges, chal["title"])
+                    create_challenge(chal, None, settings.url, settings.token, settings.scoring)
+                    print("-", chal["title"], "refreshed")
+
+    # TODO: delete a challenge if not exists (if exists in existing challenges and not in challenges, delete)
+    # TODO: ID nice reset
