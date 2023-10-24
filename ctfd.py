@@ -179,6 +179,13 @@ def create_challenge(challenge, directory, url, access_token, scoring = None):
     #    r = session.patch(f"/api/v1/challenges/{challenge_id}", json=data)
     #    r.raise_for_status()
 
+    def delete_challenge_by_id(challenge_id, access_token, url):
+        auth_headers = {"Authorization": f"Token {access_token}"}
+
+        r = session.delete(url + f"/api/v1/challenges/{challenge_id}", json={}, headers=auth_headers)
+        r.raise_for_status()
+
+
 if __name__ == "__main__":
     ensure_config_exists()
     config.read(SETTINGS_FILE)
